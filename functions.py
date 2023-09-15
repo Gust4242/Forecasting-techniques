@@ -36,7 +36,7 @@ def forecast_comparisson(df, product_col='Product', real_sales_col='Real_sales',
     fig.update_layout(barmode='group', xaxis_title='Product', yaxis_title='Sales')
     return fig.show()
 
-def extract_date_features(df, date_column='date',merge_main=True):
+def extract_date_features(df, date_column='date'):
     """
     Extracts features of a date column in a dataframe.
 
@@ -44,7 +44,6 @@ def extract_date_features(df, date_column='date',merge_main=True):
     -----------
     df (pandas.DataFrame): The dataframe containing the date column.
     date_column (str): The name of the date column in the dataframe.
-    merge_main (bool) : Condition to merge to the main datafrme or not. Default is True
 
     Returns:
     pandas.DataFrame
@@ -67,3 +66,29 @@ def extract_date_features(df, date_column='date',merge_main=True):
     df['is_bizdays'] = df[date_column].apply(lambda x: CAL.isbizday(x))
 
     return df
+
+def add_lags(df, lags=[1], date_column='Date', target_col='Amount', fillna=0):
+    """
+    Add lags to a dataframe.
+
+    Parameters:
+    -----------
+    df (pandas.DataFrame): The dataframe containing the data.
+    lags (list of int): Number of days the serie will be lagged
+    date_column (str): Name of the column containing the date
+    target_col (str): Name of the column with the values to be lagged
+    fillna (int): Value to fill the NaNs
+
+    Returns:
+    pandas.DataFrame
+    """
+    df_lagged = df.copy()
+    df_lagged = df_lagged.sort_values('Date')
+    for i in lags:
+        if i > 0:
+            col_name = target_col + '_lag' + '_' + str(i)
+        else:
+            pass
+        df_lagged[col_name] = df_lagged.groupby(date_column)[target_col].shift(i)
+        df_lagged[col_name].fillna(fillna, inplace=True)
+    return df_lagged
